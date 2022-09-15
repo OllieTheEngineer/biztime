@@ -31,7 +31,7 @@ router.get("/:code", async function (req, res, next) {
              [code]
         );
 
-        if (companyRes.roas.length === 0) {
+        if (companyRes.rows.length === 0) {
             throw new ExpressError(`There isn't a company with that ${code}`, 404)
         }
         return res.json({"company": company});
