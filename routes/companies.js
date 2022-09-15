@@ -44,12 +44,12 @@ router.post("/", async function (req, res, next){
     try{
         const {name, description, code} = req.body;
 
-        const res = await db.query(
+        const results = await db.query(
             `INSERT INTO companies (code, name, description)
              VALUES ($1, $2, $3)
              RETURNING code, name, description`, [code, name, description]);
 
-        return res.status(201),json({"company": res.rows[0]})
+        return res.status(201),json({"company": results.rows[0]})
     }
     catch(err){
         return next(err);
@@ -61,16 +61,16 @@ router.put("/:code", async function (req, res, next){
         const {name, description} = req.body;
         const code = req.params.code;
 
-        const res = await db.query(
+        const results = await db.query(
             `UPDATE companies
              SET name=$1, description=$2
              WHERE code =$3
              RETURNING code, name, description`, [code, name, description]);
 
-        if (res.rows.length === 0) {
+        if (results.rows.length === 0) {
             throw new ExpressError(`No company with that ${code}`, 404)
         } else {
-            return res.json({"company": res.rows[0]})
+            return res.json({"company": results.rows[0]})
         }
 
     }
@@ -83,12 +83,12 @@ router.delete("/:code", async function (req, res, next){
     try{
         let code = req.params.code;
 
-        const res = await db.query(
+        const results = await db.query(
             `DELETE FROM companies
              WHERE code=$1
              RETURNING code`, [code]);
 
-        if (res.rows.length === 0) {
+        if (results.rows.length === 0) {
             throw new ExpressError(`No company with that ${code}`, 404)
         } else {
             return res.json({"status": "deleted"});

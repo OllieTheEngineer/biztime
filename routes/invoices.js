@@ -6,13 +6,13 @@ let router = new express.Router();
 
 router.get("/", async function (req, res, next) {
     try{
-        const res = await db.query(
+        const results = await db.query(
             `SELECT id, comp_code
              FROM invoices
              ORDER BY id`
         );
 
-        return res.json({"invoices": res.rows});
+        return res.json({"invoices": results.rows});
     }
     catch (err){
         return next (err)
@@ -23,7 +23,7 @@ router.get("/:id", async function (req, res, next){
     try {
         let id = req.params.id;
 
-        const res = await db.query(
+        const results = await db.query(
             `SELECT i.id
                     i.comp_code,
                     i.amount,
@@ -36,7 +36,7 @@ router.get("/:id", async function (req, res, next){
                 INNER JOIN companies AS c on (i.comp_code = c.code)
             WHERE id = $1`,  [id]);
 
-        if (res.rows.length === 0) {
+        if (results.rows.length === 0) {
             throw new ExpressError(`No invoice with that ${id}`, 404);
         }
 
@@ -65,12 +65,12 @@ router.post("/", async function (req, res, next) {
     try{
      let { comp_code, amount } = req.body;
 
-     const res = await db.query(
+     const results = await db.query(
         `INSERT INTO invoices (comp_code, amount)
          VALUES ($1, $2)
          RETURNING id, comp_code, amount, paid, add_date, paid_date`, [comp_code, amount]);
 
-    return res.json({"invoice": res.rows[0]});
+    return res.json({"invoice": results.rows[0]});
 
     }
     catch (err){
@@ -91,14 +91,14 @@ router.put("/:id", async function (req, res, next) {
         throw new ExpressError(`No invoice with that ${id}`, 404);
     }
 
-    const res = await db.query (
+    const results = await db.query (
         `UPDATE invoices
          SET amount=$1, paid=$2, paid_date=$3
          WHERE id=$4
          RETURNING id, comp_code, amount, paid, add_date, paid_date`,
          [amount, paid, paidDate, id]);
 
-    return res.json({"invocie": res.rows[0]});
+    return res.json({"invocie": results.rows[0]});
     }
     catch(err) {
         return next(err)
@@ -109,12 +109,12 @@ router.delete("/:id", async function (req, res, next){
     try{
         let id = req.params.id;
 
-        const res = await db.query(
+        const results = await db.query(
             `DELETE FROM invoices
              WHERE id = $1
              RETURNING id`, [id]);
 
-        if(res.rows.length === 0) {
+        if(results.rows.length === 0) {
             throw new ExpressError (`No invoice with that ${id}`, 404);
         }
 
