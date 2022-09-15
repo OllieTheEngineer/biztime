@@ -1,18 +1,17 @@
 const express = require("express");
 const ExpressError = require("../expressError")
 const db = require("../db");
-const { route } = require("../app");
 
 let router = new express.Router();
 
-route.get("/", async function (req, res, next){
+router.get("/", async function (req, res, next){
     try{
-        const res = await db.query(
+        const results = await db.query(
             `SELECT code, name
             FROM companies
             ORDER BY name`
         );
-        return res.json({"companies": res.rows});
+        return res.json({"companies": results.rows});
     }
 
     catch (err) {

@@ -1,8 +1,8 @@
 /** Database setup for BizTime. */
 
-const { client } = require("pg");
+const { Client } = require("pg");
 
-const client = new cLIENT ({
+const client = new Client ({
     connectString: "postgresql:///biztime"
 });
 
