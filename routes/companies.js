@@ -33,7 +33,7 @@ router.get("/:code", async function (req, res, next) {
         if (companyRes.rows.length === 0) {
             throw new ExpressError(`There isn't a company with that ${code}`, 404)
         }
-        return res.json({"company": company});
+        return res.json({"company": companyRes});
     }
     catch(err){
         return next(err)
@@ -49,7 +49,7 @@ router.post("/", async function (req, res, next){
              VALUES ($1, $2, $3)
              RETURNING code, name, description`, [code, name, description]);
 
-        return res.status(201),json({"company": results.rows[0]})
+        return res.status(201).json({"company": results.rows[0]})
     }
     catch(err){
         return next(err);
@@ -65,7 +65,7 @@ router.put("/:code", async function (req, res, next){
             `UPDATE companies
              SET name=$1, description=$2
              WHERE code =$3
-             RETURNING code, name, description`, [code, name, description]);
+             RETURNING code, name, description`, [name, description, code]);
 
         if (results.rows.length === 0) {
             throw new ExpressError(`No company with that ${code}`, 404)

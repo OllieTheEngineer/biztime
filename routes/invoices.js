@@ -22,11 +22,11 @@ router.get("/", async function (req, res, next) {
 router.get("/:id", async function (req, res, next){
     try {
         let id = req.params.id;
-
+        console.log(id)
         const results = await db.query(
-            `SELECT i.id
+            `SELECT i.id,
                     i.comp_code,
-                    i.amount,
+                    i.amt,
                     i.paid,
                     i.add_date,
                     i.paid_date,
@@ -35,25 +35,26 @@ router.get("/:id", async function (req, res, next){
             FROM invoices AS i
                 INNER JOIN companies AS c on (i.comp_code = c.code)
             WHERE id = $1`,  [id]);
-
+            console.log(results)
         if (results.rows.length === 0) {
             throw new ExpressError(`No invoice with that ${id}`, 404);
         }
 
-        let data = res.rows[0];
+        let data = results.rows[0];
+        console.log(data)
         let invoice = {
-            id: data.id,
-            company: {
+                id: data.id,
+                company: {
                 code: data.comp_code,
                 name: data.name,
                 description: data.description,
             },
-            amount: data.amount,
+            amount: data.amt,
             paid: data.paid,
             add_date: data.add_date,
             paid_date: data.paid_date,
         };
-
+        console.log(invoice)
         return res.json({"invoice": invoice});
     }
     catch(err){
@@ -66,9 +67,9 @@ router.post("/", async function (req, res, next) {
      let { comp_code, amount } = req.body;
 
      const results = await db.query(
-        `INSERT INTO invoices (comp_code, amount)
+        `INSERT INTO invoices (comp_code, amt)
          VALUES ($1, $2)
-         RETURNING id, comp_code, amount, paid, add_date, paid_date`, [comp_code, amount]);
+         RETURNING id, comp_code, amt, paid, add_date, paid_date`, [comp_code, amount]);
 
     return res.json({"invoice": results.rows[0]});
 
@@ -81,6 +82,7 @@ router.post("/", async function (req, res, next) {
 router.put("/:id", async function (req, res, next) {
     try{
      let {amount, paid} = req.body;
+     const id = req.params.id;
      
      const currentRes = await db.query(
         `SELECT paid
@@ -91,12 +93,18 @@ router.put("/:id", async function (req, res, next) {
         throw new ExpressError(`No invoice with that ${id}`, 404);
     }
 
+    let paid_date = null;
+
+    if(paid){
+        paid_date = new Date();
+    }
+
     const results = await db.query (
         `UPDATE invoices
-         SET amount=$1, paid=$2, paid_date=$3
+         SET amt=$1, paid=$2, paid_date=$3
          WHERE id=$4
-         RETURNING id, comp_code, amount, paid, add_date, paid_date`,
-         [amount, paid, paidDate, id]);
+         RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+         [amount, paid, paid_date, id]);
 
     return res.json({"invocie": results.rows[0]});
     }
